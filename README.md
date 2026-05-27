@@ -1,6 +1,8 @@
 # fpga-rsa-key-generation
 RSA key generation using FPGA - Verilog, Vivado 2023.1. Final project for [Systemy Dedykowane w Układach Programowalnych](https://github.com/AlexSzczygielski/sdup-labs) laboratories.
 
+- **[How to Run the Project](#first-time-setup)**
+- **[How to Commit Changes](#committing-changes)**
 ## Repository Structure
 
 ```text
@@ -21,9 +23,10 @@ RSA key generation using FPGA - Verilog, Vivado 2023.1. Final project for [Syste
 - TCL usage
 
 > **TCL (Tool Command Language)** is a scripting language used by Vivado to automate project setup and builds.  
-> Instead of manually creating the project in the GUI, the `create_project.tcl` script automatically adds sources, constraints, IP, and settings so the project can be recreated on any machine with one command.
+> Instead of manually creating the project in the GUI, the `fpga-rsad-key-generation.tcl` script automatically adds sources, constraints, IP, and settings so the project can be recreated on any machine with one command.
 
-## First-Time Setup (Run the Project)
+## First-Time Setup
+###  (Run the Project)
 
 ```bash
 git clone <repository-url>
@@ -47,13 +50,13 @@ Instead of manually creating a project, generate it from the repository:
 
 - Select:
   ```
-  scripts/create_project.tcl
+  scripts/fpga-rsad-key-generation.tcl
   ```
 
 OR run from terminal:
 
 ```bash
-vivado -mode batch -source scripts/create_project.tcl
+vivado -mode batch -source scripts/fpga-rsad-key-generation.tcl
 ```
 
 ### 3. Open the Generated Project
@@ -68,7 +71,8 @@ You can now:
 
 ---
 
-## Commiting Changes (Daily Workflow)
+## Committing Changes
+### (Daily Workflow)
 
 ### Step 1: Finish your work in Vivado and save changes
 ---
@@ -101,13 +105,16 @@ If you:
 
 In Vivado:
 ```
-File → Write Project Tcl
+File → Project -> Write Tcl...
 ```
+> (It is the last option)
 
 Overwrite:
 ```text
-scripts/create_project.tcl
+scripts/fpga-rsa-key-generation.tcl
 ```
+
+**Leave all the options checkboxes unchecked.**
 
 > This ensures Git knows about your changes.
 
@@ -138,7 +145,7 @@ git commit -m "Add new module / fix bug / update design"
 Push to GitHub:
 
 ```bash
-git push
+git push origin main
 ```
 
 ---
@@ -148,10 +155,10 @@ git push
 Every time you work:
 
 ```text
-1. Open Vivado using create_project.tcl
+1. Open Vivado using fpga-rsad-key-generation.tcl
 2. Modify Verilog / constraints / IP
 3. Save files into src/ constraints/ ip/
-4. Regenerate create_project.tcl (if structure changed)
+4. Regenerate fpga-rsad-key-generation.tcl (if structure changed)
 5. git add .
 6. git commit -m "message"
 7. git push
@@ -166,7 +173,7 @@ Every time you work:
 - constraints/*.xdc
 - sim/*
 - ip/*.xci
-- scripts/create_project.tcl
+- scripts/fpga-rsad-key-generation.tcl
 
 ### ❌ Never commit:
 - .runs/
@@ -185,7 +192,7 @@ To rebuild everything:
 ```bash
 git clone <repo>
 cd fpga-rsa-key-generation
-vivado -mode batch -source scripts/create_project.tcl
+vivado -mode batch -source scripts/fpga-rsad-key-generation.tcl
 ```
 
 Then open Vivado and continue working normally.
