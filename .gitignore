@@ -1,4 +1,4 @@
-# Vivado
+# Vivado generated
 .cache/
 .gen/
 .hw/
@@ -6,6 +6,11 @@
 .runs/
 .sim/
 .xil/
+*.xpr
+*.wdb
+*.wcfg
+*.lpr
+*.wpc
 
 # Logs
 *.jou
