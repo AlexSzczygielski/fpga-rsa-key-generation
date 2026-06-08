@@ -37,8 +37,8 @@ module prime_checker_inside_module(
     reg [8:0] d = 0;
     
     reg [8:0] seed = 5782;
-    reg [8:0] result = 0;
-    
+    wire [8:0] result;
+
     random_number_generator generator(
         .seed (seed),
         .ce (ce),
@@ -50,7 +50,7 @@ module prime_checker_inside_module(
     reg [8:0] base;
     reg [8:0] exponent;
     wire pow_ready;
-    reg [8:0] pov_result;
+    wire [8:0] pov_result;
     pow power(
         .be (begin_power),
         .in_base (base),
@@ -58,7 +58,7 @@ module prime_checker_inside_module(
         .n (number),
         .CLK (CLK),
         .ready (pow_ready),
-        .result (pov_result)
+        .out_result (pov_result)
     );
     
     reg [8:0] a;
@@ -74,8 +74,9 @@ module prime_checker_inside_module(
             state <= 0;
             i <= 0;
             is_prime <= 0;
+            ready <= 0;
         end else begin
-            if(state == 0)begin //tutaj ewentualnie daæ begin poewr do nastêpnego stanu ¿eby mieæ pewnoœæ ¿ê liczy na dobrych danych
+            if(state == 0)begin //tutaj ewentualnie daï¿½ begin poewr do nastï¿½pnego stanu ï¿½eby mieï¿½ pewnoï¿½ï¿½ ï¿½ï¿½ liczy na dobrych danych
                 a <= result;
                 state <= 1;
                 base <= result;
@@ -92,12 +93,13 @@ module prime_checker_inside_module(
                     is_prime <= 1;
                     ready <= 1;
                     state <= 7;
+                end else begin
+                    state <= 3;
                 end
-                state = 3;
-            end else if(state == 3)begin    //tutaj zaczynamy pêtle
+            end else if(state == 3)begin    //tutaj zaczynamy pï¿½tle
                 base <= x;
                 exponent <= 2;
-                begin_power = 1;
+                begin_power <= 1;
                 state <= 4;
             end else if(state == 4)begin
                 begin_power <= 0;

@@ -45,33 +45,39 @@ module miller_rabin_test(
         .be (inside_begin),
         .in_s (s),
         .in_d (d),
+        .ce (1'b0),
         .is_prime (inside_is_prime),
         .ready (inside_ready)
     );
     
     always @(posedge CLK)begin
-        if(ce == 1)begin
-        end
-        if (started == 0)begin
-        i <= 0;
-        inside_begin <= 0;
+        if(be == 1)begin
+            started <= 0;
+            ready <= 0;
+            i <= 0;
+            inside_begin <= 0;
+        end else if (started == 0)begin
+            i <= 0;
+            inside_begin <= 0;
             if (candidate == 1 || candidate == 4)begin
                 is_prime <= 0;
                 ready <= 1;
+                started <= 1;
             end else if (candidate == 3)begin
                is_prime <= 1;
                ready <= 1;
+               started <= 1;
             end else if (candidate % 2 == 0)begin
                 is_prime <= 0;
                 ready <= 1;
+                started <= 1;
             end else begin
                 started <= 1;
                 d <= candidate - 1;
                 s <= 0;
                 state <= 0;
             end
-        end
-        if(started == 1)begin
+        end else begin
             if(state == 0)begin
                 if(d % 2 == 0)begin
                     d <= d >> 1;
@@ -87,16 +93,16 @@ module miller_rabin_test(
                         i <= i + 1;
                         if(i < 14)begin
                             inside_begin <= 1;
-                        end else begin//jest pierwsza
+                        end else begin
                             is_prime <= 1;
                             ready <= 1;
                         end
-                    end else begin//nie jest pierwsza
+                    end else begin
                         is_prime <= 0;
                         ready <= 1;
                     end
                 end
             end
         end
-	end   
+    end
 endmodule
