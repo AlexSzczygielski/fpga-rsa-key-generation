@@ -20,21 +20,14 @@
 #
 # 1. This project restoration tcl script (fpga-rsa-key-generation.tcl) that was generated.
 #
-# 2. The following source(s) files that were local or imported into the original project.
-#    (Please see the '$orig_proj_dir' and '$origin_dir' variable setting below at the start of the script)
-#
-#    "C:/Users/olek_szczygielski/AppData/Roaming/Xilinx/Vivado/fpga-rsa-key-generation/fpga-rsa-key-generation.srcs/sources_1/bd/design_1/design_1.bd"
-#
-# 3. The following remote source files that were added to the original project:-
+# 2. The following remote source files that were added to the original project:-
 #
 #    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/miller_rabin_test.v"
 #    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/pow.v"
 #    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/prime_checker_inside_module.v"
 #    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/random_number_generator.v"
 #    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/main.v"
-#    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/rsa_keygen.v"
-#    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/rsa_top.v"
-#    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/src/uart_tx.v"
+#    "C:/Users/olek_szczygielski/Desktop/AGH/projects/fpga-rsa-key-generation/sim/tb_prime_number_generator.v"
 #
 #*****************************************************************************************
 
@@ -42,24 +35,12 @@
 proc checkRequiredFiles { origin_dir} {
   set status true
   set files [list \
- "[file normalize "$origin_dir/../../../../../AppData/Roaming/Xilinx/Vivado/fpga-rsa-key-generation/fpga-rsa-key-generation.srcs/sources_1/bd/design_1/design_1.bd"]"\
-  ]
-  foreach ifile $files {
-    if { ![file isfile $ifile] } {
-      puts " Could not find local file $ifile "
-      set status false
-    }
-  }
-
-  set files [list \
  "[file normalize "$origin_dir/../src/miller_rabin_test.v"]"\
  "[file normalize "$origin_dir/../src/pow.v"]"\
  "[file normalize "$origin_dir/../src/prime_checker_inside_module.v"]"\
  "[file normalize "$origin_dir/../src/random_number_generator.v"]"\
  "[file normalize "$origin_dir/../src/main.v"]"\
- "[file normalize "$origin_dir/../src/rsa_keygen.v"]"\
- "[file normalize "$origin_dir/../src/rsa_top.v"]"\
- "[file normalize "$origin_dir/../src/uart_tx.v"]"\
+ "[file normalize "$origin_dir/../sim/tb_prime_number_generator.v"]"\
   ]
   foreach ifile $files {
     if { ![file isfile $ifile] } {
@@ -71,7 +52,7 @@ proc checkRequiredFiles { origin_dir} {
   return $status
 }
 # Set the reference directory for source file relative paths (by default the value is script directory path)
-set origin_dir "."
+set origin_dir "[file dirname [info script]]"
 
 # Use origin directory path location variable, if specified in the tcl shell
 if { [info exists ::origin_dir_loc] } {
@@ -135,7 +116,7 @@ if { $::argc > 0 } {
 }
 
 # Set the directory path for the original project from where this script was exported
-set orig_proj_dir "[file normalize "$origin_dir/../../../../../AppData/Roaming/Xilinx/Vivado/fpga-rsa-key-generation"]"
+set orig_proj_dir "[file normalize "$origin_dir/../"]"
 
 # Check for paths and files needed for project creation
 set validate_required 0
@@ -149,7 +130,7 @@ if { $validate_required } {
 }
 
 # Create project
-create_project ${_xil_proj_name_} ./${_xil_proj_name_} -part xc7a12ticsg325-1L
+create_project ${_xil_proj_name_} ./${_xil_proj_name_} -part xc7a12ticsg325-1L -force
 
 # Set the directory path for the new project
 set proj_dir [get_property directory [current_project]]
@@ -185,25 +166,11 @@ set files [list \
  [file normalize "${origin_dir}/../src/prime_checker_inside_module.v"] \
  [file normalize "${origin_dir}/../src/random_number_generator.v"] \
  [file normalize "${origin_dir}/../src/main.v"] \
- [file normalize "${origin_dir}/../src/rsa_keygen.v"] \
- [file normalize "${origin_dir}/../src/rsa_top.v"] \
- [file normalize "${origin_dir}/../src/uart_tx.v"] \
 ]
 add_files -norecurse -fileset $obj $files
 
-# Add local files from the original project (-no_copy_sources specified)
-set files [list \
- [file normalize "${origin_dir}/../../../../../AppData/Roaming/Xilinx/Vivado/fpga-rsa-key-generation/fpga-rsa-key-generation.srcs/sources_1/bd/design_1/design_1.bd" ]\
-]
-set added_files [add_files -fileset sources_1 $files]
-
 # Set 'sources_1' fileset file properties for remote files
 # None
-
-# Set 'sources_1' fileset file properties for local files
-set file "design_1/design_1.bd"
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
-set_property -name "registered_with_manager" -value "1" -objects $file_obj
 
 
 # Set 'sources_1' fileset properties
@@ -232,11 +199,14 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 
 # Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
-# Empty (no sources present)
+set files [list \
+ [file normalize "${origin_dir}/../sim/tb_prime_number_generator.v"] \
+]
+add_files -norecurse -fileset $obj $files
 
 # Set 'sim_1' fileset properties
 set obj [get_filesets sim_1]
-set_property -name "top" -value "prime_number_generator" -objects $obj
+set_property -name "top" -value "tb_prime_number_generator" -objects $obj
 set_property -name "top_lib" -value "xil_defaultlib" -objects $obj
 
 # Set 'utils_1' fileset object

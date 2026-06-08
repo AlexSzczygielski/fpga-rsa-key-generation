@@ -10,8 +10,8 @@ module prime_number_generator
     input wire ce
 );
 
-reg [8:0] result;
-reg [8:0] candidate;
+wire [8:0] result;
+reg  [8:0] candidate;
 
 random_number_generator generator(
     .seed (seed),
