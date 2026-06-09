@@ -1,97 +1,100 @@
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
 
-module tb_prime_number_generator;
+module prime_number_generator_tb;
 
-reg        CLK;
-reg        be;
-reg [8:0]  seed;
-reg        ce;
-wire [8:0] x;
-wire       done;
+    // --- Sygna³y testbench ---
+    reg CLK;
+    reg be;
+    reg [8:0] seed;
+    reg ce;
 
-prime_number_generator dut (
-    .CLK  (CLK),
-    .be   (be),
-    .seed (seed),
-    .x    (x),
-    .done (done),
-    .ce   (ce)
-);
+    wire [8:0] x;
+    wire done;
 
-initial CLK = 0;
-always #5 CLK = ~CLK;
+    // --- Instancja testowanego modu³u (DUT) ---
+    prime_number_generator uut (
+        .CLK(CLK),
+        .be(be),
+        .seed(seed),
+        .x(x),
+        .done(done),
+        .ce(ce)
+    );
 
-// Trial-division primality check for use in simulation only
-function is_prime;
-    input [8:0] n;
-    integer i;
-    reg result;
-    begin
-        if (n < 9'd2)       result = 1'b0;
-        else if (n == 9'd2) result = 1'b1;
-        else if (n[0] == 0) result = 1'b0;
-        else begin
-            result = 1'b1;
-            for (i = 3; i*i <= n; i = i + 2)
-                if (n % i == 0) result = 1'b0;
-        end
-        is_prime = result;
+    // --- Generowanie zegara (100 MHz, okres 10ns) ---
+    always begin
+        #5 CLK = ~CLK;
     end
-endfunction
 
-integer pass_count;
+    // --- G³ówny proces testowy ---
+    initial begin
+        // 1. Inicjalizacja sygna³ów wejœciowych
+        CLK = 0;
+        be = 0;
+        seed = 9'd42; // Przyk³adowy pocz¹tkowy seed dla generatora
+        ce = 1;       // W Twoim kodzie 'ce == 1' zeruje 'done' i zatrzymuje FSM, 
+                      // dlatego trzymamy ce = 0 podczas normalnej pracy.
+                      
+        #20
+        ce = 0;
 
-task run_test;
-    input [8:0] test_seed;
-    input integer id;
-    integer timeout;
-    begin
-        // Reset: assert ce to reload seed into RNG
-        ce = 1'b1;
-        be = 1'b0;
-        seed = test_seed;
-        repeat(5) @(posedge CLK);
-        ce = 1'b0;
-        repeat(2) @(posedge CLK);
+        // Odczekaj chwilê na ustabilizowanie uk³adu
+        #20;
 
-        // Trigger prime generation
+        $display("====================================================");
+        $display("   URUCHOMIENIE GENERATORA LICZB PIERWSZYCH         ");
+        $display("====================================================");
+
+        // 2. Wyzwalanie pierwszego szukania liczby pierwszej
         @(posedge CLK);
-        be = 1'b1;
+        be = 1;         // Impuls startu
+        seed = 9'd105;  // Mo¿esz zmieniæ seed przed startem
+        
         @(posedge CLK);
-        be = 1'b0;
+        be = 0;         // Gasimy impuls po jednym takcie
 
-        // Wait for done (1-cycle pulse)
-        timeout = 0;
-        while (!done && timeout < 200000) begin
-            @(posedge CLK);
-            timeout = timeout + 1;
-        end
+        // 3. Oczekiwanie na znalezienie liczby pierwszej
+        // Uk³ad mo¿e krêciæ siê w pêtli stanów 1 -> 2 -> 1, dopóki test MR nie powie: sukces!
+        @(posedge done);
+        #1; // Przesuniêcie dla stabilnoœci odczytu danych w konsoli
+        $display("[t=%0dns] SUKCES: Wygenerowano liczbê pierwsz¹ x = %0d", $time, x);
 
-        if (timeout >= 200000) begin
-            $display("TIMEOUT: test %0d seed=%0d", id, test_seed);
-        end else if (is_prime(x)) begin
-            $display("PASS: test %0d seed=%0d -> x=%0d is prime", id, test_seed, x);
-            pass_count = pass_count + 1;
+        #50;
+
+        // 4. Test ponownego uruchomienia z innym seedem
+        $display("\n[t=%0dns] Próba wygenerowania kolejnej liczby z nowym seedem...", $time);
+        @(posedge CLK);
+        seed = 9'd241;  // Zmiana ziarna, aby wylosowaæ inne liczby
+        be = 1;
+        
+        @(posedge CLK);
+        be = 0;
+
+        @(posedge done);
+        #1;
+        $display("[t=%0dns] SUKCES: Wygenerowano kolejn¹ liczbê pierwsz¹ x = %0d", $time, x);
+
+        // 5. Test sygna³u 'ce' (Clock Enable / Reset w Twojej implementacji)
+        #50;
+        $display("\n[t=%0dns] Test zachowania sygna³u 'ce'...", $time);
+        @(posedge CLK);
+        ce = 1; // Aktywacja ce powinna natychmiast wyzerowaæ sygna³ done
+        
+        #20;
+        if (done == 0) begin
+            $display("[t=%0dns] Sygna³ 'done' poprawnie wyzerowany przez ce.", $time);
         end else begin
-            $display("FAIL: test %0d seed=%0d -> x=%0d is NOT prime", id, test_seed, x);
+            $display("[t=%0dns] B£¥D: Sygna³ 'done' nie zareagowa³ na ce!", $time);
         end
+        
+        @(posedge CLK);
+        ce = 0; // Powrót do normalnego stanu
+
+        #50;
+        $display("====================================================");
+        $display("                KONIEC SYMULACJI                    ");
+        $display("====================================================");
+        $finish;
     end
-endtask
-
-initial begin
-    $dumpfile("tb_prime_number_generator.vcd");
-    $dumpvars(0, tb_prime_number_generator);
-
-    pass_count = 0;
-
-    run_test(9'd37,  1);
-    run_test(9'd101, 2);
-    run_test(9'd199, 3);
-    run_test(9'd251, 4);
-    run_test(9'd13,  5);
-
-    $display("--- %0d/5 tests passed ---", pass_count);
-    $finish;
-end
 
 endmodule

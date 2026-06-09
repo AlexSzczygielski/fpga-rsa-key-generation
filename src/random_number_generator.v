@@ -31,7 +31,7 @@ module random_number_generator(
         if(ce == 1)begin
             result <= seed;
         end else begin
-            result <= {result[2:0] ^ result[8:6], result[5:1], 1'b1};
+            result <= {result[7:0], result[8] ^ result[4]};
         end
     end
 endmodule

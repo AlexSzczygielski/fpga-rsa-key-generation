@@ -34,6 +34,7 @@ reg [8:0] base;
 reg [8:0] exponent;
 reg [8:0] result;
 
+
 always @(posedge CLK) begin
     if (be) begin
         result <= 1;
@@ -42,9 +43,9 @@ always @(posedge CLK) begin
         exponent <= in_exponent;
     end else if (exponent > 0) begin
         if (exponent[0] == 1) begin
-            result <= result * base % n;
+            result <= ({9'd0, result} * base) % n;
         end
-        base <= base * base % n;
+        base <= ({9'd0, base} * base) % n;
         exponent <= exponent >> 1;
     end else begin
         out_result <= result;
