@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
 // Top-level for Arty S7-50
-// Clock: 100 MHz (R2, SSTL135)
-// UART TX: R12, 9600 baud @ 100 MHz
+// Clock: 12 MHz (F14)
+// UART TX: R12, 9600 baud
 // Reset: ck_rst (C18, active-low)
 // LED[0] (E18): pulses when both primes have been sent
 //
@@ -10,17 +10,17 @@
 // print "P1: NNN\r\nP2: NNN\r\n" over UART at 9600 8N1, then hold.
 
 module top_uart (
-    input  wire CLK,
+    input  wire CLK12MHZ,
     input  wire ck_rst,       // active-low reset button
     output wire uart_rxd_out, // UART TX to PC (misleading Digilent name)
-    output reg  led           // LED[0] — done indicator
+    output reg  led           // LED[0] - done indicator
 );
 
 // -------------------------------------------------------------------------
 // Reset synchroniser (active-high internal reset)
 // -------------------------------------------------------------------------
 reg rst_sync0 = 1, rst_sync1 = 1;
-always @(posedge CLK) begin
+always @(posedge CLK12MHZ) begin
     rst_sync0 <= ~ck_rst;
     rst_sync1 <= rst_sync0;
 end
@@ -35,7 +35,7 @@ reg        prime1_be  = 0;
 reg        prime1_ce  = 1;   // hold in reset initially
 
 prime_number_generator gen1 (
-    .CLK  (CLK),
+    .CLK  (CLK12MHZ),
     .be   (prime1_be),
     .seed (9'd105),
     .ce   (prime1_ce),
@@ -52,7 +52,7 @@ reg        prime2_be = 0;
 reg        prime2_ce = 1;
 
 prime_number_generator gen2 (
-    .CLK  (CLK),
+    .CLK  (CLK12MHZ),
     .be   (prime2_be),
     .seed (9'd241),
     .ce   (prime2_ce),
@@ -67,8 +67,8 @@ reg        uart_send = 0;
 reg  [7:0] uart_data = 0;
 wire       uart_busy;
 
-uart_tx #(.CLK_DIV(10417)) utx (
-    .CLK  (CLK),
+uart_tx #(.CLK_DIV(1250)) utx (
+    .CLK  (CLK12MHZ),
     .rst  (rst),
     .send (uart_send),
     .data (uart_data),
@@ -86,7 +86,7 @@ reg [4:0] msg_len  = 0;
 reg [4:0] msg_idx  = 0;
 
 // -------------------------------------------------------------------------
-// BCD helpers — split 9-bit value (0..511) into hundreds/tens/ones
+// BCD helpers - split 9-bit value (0..511) into hundreds/tens/ones
 // -------------------------------------------------------------------------
 reg [8:0] bcd_in;
 reg [3:0] bcd_h, bcd_t, bcd_u;
@@ -122,7 +122,7 @@ localparam S_DONE       = 4'd9;
 
 reg [3:0] state = S_RESET;
 
-// Message builder — writes into msg[] and sets msg_len
+// Message builder - writes into msg[] and sets msg_len
 // Called combinatorially from S_BUILD_MSG
 integer bi;
 task build_message;
@@ -175,7 +175,7 @@ task build_message;
     end
 endtask
 
-always @(posedge CLK) begin
+always @(posedge CLK12MHZ) begin
     if (rst) begin
         state      <= S_RESET;
         prime1_ce  <= 1;

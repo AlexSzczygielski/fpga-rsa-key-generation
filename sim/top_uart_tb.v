@@ -2,23 +2,23 @@
 
 module top_uart_tb;
 
-reg  CLK = 0;
+reg  CLK12MHZ = 0;
 reg  ck_rst   = 0;   // active-low: 0 = reset asserted
 wire uart_rxd_out;
 wire led;
 
 // 12 MHz clock: period = 83.333 ns
-always #5 CLK = ~CLK;
+always #41 CLK12MHZ = ~CLK12MHZ;
 
 top_uart dut (
-    .CLK    (CLK),
+    .CLK12MHZ    (CLK12MHZ),
     .ck_rst      (ck_rst),
     .uart_rxd_out(uart_rxd_out),
     .led         (led)
 );
 
 // UART monitor: capture bytes at 9600 baud (1 bit = 1250 cycles @ 12MHz = 104166 ns)
-localparam BIT_PERIOD = 104170;
+localparam BIT_PERIOD = 104166;
 
 task receive_uart_byte;
     output [7:0] rxbyte;
@@ -57,7 +57,7 @@ initial begin
         for (b = 0; b < 20; b = b + 1) begin
             receive_uart_byte(rxbyte);
             if (rxbyte == 8'h0A && b >= 15) begin
-                // Second newline received — message complete
+                // Second newline received - message complete
                 disable rx_loop;
             end
         end
@@ -69,7 +69,7 @@ initial begin
     $finish;
 end
 
-// Timeout watchdog — prime generation can take many cycles
+// Timeout watchdog - prime generation can take many cycles
 initial begin
     #500_000_000;
     $display("TIMEOUT");
