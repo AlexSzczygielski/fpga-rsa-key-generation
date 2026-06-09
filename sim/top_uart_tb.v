@@ -2,23 +2,23 @@
 
 module top_uart_tb;
 
-reg  CLK12MHZ = 0;
+reg  CLK = 0;
 reg  ck_rst   = 0;   // active-low: 0 = reset asserted
 wire uart_rxd_out;
 wire led;
 
 // 12 MHz clock: period = 83.333 ns
-always #41 CLK12MHZ = ~CLK12MHZ;
+always #5 CLK = ~CLK;
 
 top_uart dut (
-    .CLK12MHZ    (CLK12MHZ),
+    .CLK    (CLK),
     .ck_rst      (ck_rst),
     .uart_rxd_out(uart_rxd_out),
     .led         (led)
 );
 
 // UART monitor: capture bytes at 9600 baud (1 bit = 1250 cycles @ 12MHz = 104166 ns)
-localparam BIT_PERIOD = 104166;
+localparam BIT_PERIOD = 104170;
 
 task receive_uart_byte;
     output [7:0] rxbyte;
