@@ -1,24 +1,22 @@
-## Arty S7-50 Rev E constraints for top_uart
+## Arty S7-50 Rev E - top_uart constraints
 ## Part: xc7s50csga324-1
-##
-## Using 100 MHz DDR clock (R2, bank 34, SSTL135) — proper MRCC pin, no BUFG routing issues.
-## UART divisor in top_uart.v must be 10417 (100_000_000 / 9600).
+## Clock: 12 MHz oscillator at F14 (IO_L13P_T2_MRCC_15, bank 15, LVCMOS33)
+## UART baud divisor: 12_000_000 / 9600 = 1250
 
-## 100 MHz clock (bank 34, SSTL135)
-set_property -dict { PACKAGE_PIN R2  IOSTANDARD SSTL135 } [get_ports { CLK }];
-create_clock -add -name sys_clk_pin -period 10.000 -waveform {0 5.000} [get_ports { CLK }];
+## 12 MHz clock
+set_property -dict { PACKAGE_PIN F14  IOSTANDARD LVCMOS33 } [get_ports { CLK12MHZ }];
+create_clock -add -name sys_clk_pin -period 83.333 -waveform {0 41.667} [get_ports { CLK12MHZ }];
 
-## Reset button (ck_rst, active-low, bank 15, LVCMOS33)
+## Reset button (active-low)
 set_property -dict { PACKAGE_PIN C18  IOSTANDARD LVCMOS33 } [get_ports { ck_rst }];
 
-## USB-UART TX to PC (R12, bank 14, LVCMOS33)
-## Signal name on schematic: uart_rxd_out (direction is from PC's perspective)
+## UART TX to PC
 set_property -dict { PACKAGE_PIN R12  IOSTANDARD LVCMOS33 } [get_ports { uart_rxd_out }];
 
-## LED[0] — done indicator (E18, bank 15, LVCMOS33)
+## LED[0] done indicator
 set_property -dict { PACKAGE_PIN E18  IOSTANDARD LVCMOS33 } [get_ports { led }];
 
-## Required configuration properties
+## Required config properties
 set_property BITSTREAM.CONFIG.CONFIGRATE 50 [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property CFGBVS VCCO [current_design]
