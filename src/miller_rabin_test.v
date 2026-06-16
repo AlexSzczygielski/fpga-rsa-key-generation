@@ -1,59 +1,69 @@
 `timescale 1ns / 1ps
 
 module miller_rabin_test(
-    input wire [8:0] candidate,
-    input wire be,
     input wire CLK,
-    input wire ce,
+    input wire start,
+    input wire clear,
+    input wire [7:0] in_candidate,
     output reg is_prime,
     output reg ready
     );
     
     reg started = 0;
-    reg [8:0] d = 0;
-    reg [8:0] s = 0;
-    reg [1:0] state = 0;
+    reg [7:0] d = 0;
+    reg [7:0] s = 0;
+    reg [2:0] state = 0;
     reg initial_checks = 0;
     
-    reg [3:0] i = 0; // Dodana inicjalizacja zerem
-    reg inside_begin;
-    wire inside_ready;
-    wire inside_is_prime;
+    reg [3:0] i = 0; 
+    reg test_loop_start;
+    wire test_loop_ready;
+    wire test_loop_is_prime;
     
-    prime_checker_inside_module inside_module(
+    miller_rabin_test_loop miller_rabin_loop_module(
         .CLK (CLK),
-        .candidate (candidate),
-        .be (inside_begin),
+        .start (test_loop_start),
+        .clear (clear),
+        .in_candidate (in_candidate),
         .in_s (s),
         .in_d (d),
-        .ce (ce),
-        .is_prime (inside_is_prime),
-        .ready (inside_ready)
+        .is_prime (test_loop_is_prime),
+        .ready (test_loop_ready)
     );
     
     always @(posedge CLK) begin
-        if(be == 1) begin
+        if(clear == 1) begin
+            started <= 0;
+            ready <= 0;
+            i <= 0;
+            test_loop_start <= 0;
+            initial_checks <= 0;
+            is_prime <= 0;
+            state <= 0;
+        end else if(start == 1) begin
             started <= 1;
             ready <= 0;
-            i <= 0;          // Reset licznika rund natychmiast przy starcie
-            inside_begin <= 0;
+            i <= 0;
+            test_loop_start <= 0;
             initial_checks <= 0;
+            is_prime <= 0;
+            state <= 0;
         end else if(started == 1) begin
             if (initial_checks == 0) begin
-                if (candidate == 1 || candidate == 4) begin
+                if (in_candidate == 1 || in_candidate == 4) begin
                     is_prime <= 0;
                     ready <= 1;
-                    started <= 0; // Koniec pracy - wy³¹czamy maszynê stanów
-                end else if (candidate == 3 || candidate == 2) begin
+                    started <= 0; 
+                end else if (in_candidate == 3 || in_candidate == 2) begin
                    is_prime <= 1;
                    ready <= 1;
-                   started <= 0;  // Koniec pracy
-                end else if (candidate % 2 == 0) begin
+                   started <= 0;  
+                end else if (in_candidate % 2 == 0) begin
                     is_prime <= 0;
                     ready <= 1;
-                    started <= 0; // Koniec pracy
+                    started <= 0; 
                 end else begin
-                    d <= candidate - 1;
+                    d <= in_candidate - 1;
                     s <= 0;
                     state <= 0;
                     initial_checks <= 1;
@@ -64,27 +74,32 @@ module miller_rabin_test(
                         d <= d >> 1;
                         s <= s + 1;
                     end else begin
-                        inside_begin <= 1;
+                        test_loop_start <= 1;
                         state <= 1;
                     end
-                end else if(state == 1) begin
-                    inside_begin <= 0; // Impuls startu dla podmodulu musi trwac 1 takt
-                    
-                    if(inside_ready == 1) begin
-                        if(inside_is_prime == 1) begin
+                end 
+                
+                else if(state == 1) begin
+                    test_loop_start <= 0;
+                    state <= 2;
+                end 
+                
+                else if(state == 2) begin
+                    if(test_loop_ready == 1) begin
+                        if(test_loop_is_prime == 1) begin
                             if(i < 2) begin
                                 i <= i + 1;
-                                inside_begin <= 1; // Odpalamy kolejn¹ rundê
-                                state <= 1;        // Pozostajemy w stanie 1 czekaj¹c na nowy gotowoœæ
+                                test_loop_start <= 1;
+                                state <= 1;
                             end else begin
                                 is_prime <= 1;
                                 ready <= 1;
-                                started <= 0;      // POPRAWKA: Zatrzymujemy uk³ad po sukcesie
+                                started <= 0;      
                             end
                         end else begin
                             is_prime <= 0;
                             ready <= 1;
-                            started <= 0;          // POPRAWKA: Zatrzymujemy uk³ad po pora¿ce
+                            started <= 0;          
                         end
                     end
                 end

@@ -21,17 +21,17 @@
 
 
 module random_number_generator(
-    input wire [8:0] seed,
-    input wire ce,
     input wire CLK,
-    output reg [8:0] result
+    input wire [7:0] seed,
+    input wire clear,
+    output reg [7:0] out_result
     );
     
     always @(posedge CLK)begin
-        if(ce == 1)begin
-            result <= seed;
+        if(clear == 1)begin
+            out_result <= seed;
         end else begin
-            result <= {result[7:0], result[8] ^ result[4]};
+            out_result <= (out_result << 2) + out_result + 8'd1;
         end
     end
 endmodule
