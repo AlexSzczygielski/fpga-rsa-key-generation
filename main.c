@@ -3,8 +3,7 @@
 #include "xparameters.h"
 #include "rsa_key_generator_regs.h"
 
-// Update this to the macro name Vitis generates for IP instance in
-// xparameters.h (search for "S00_AXI_BASEADDR" after creating the BSP).
+
 #define RSA_BASEADDR XPAR_RSA_IP_0_S00_AXI_BASEADDR
 
 static void rsa_pulse_start(void)
